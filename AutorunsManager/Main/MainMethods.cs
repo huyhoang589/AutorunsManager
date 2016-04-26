@@ -17,26 +17,30 @@ namespace AutorunsManager.Main
             {
                 treeView.Nodes.Add("Everything");
 
+                treeView.Nodes.Add("Start Up");
+
                 treeView.Nodes.Add("Registry");
-                treeView.Nodes[1].Nodes.Add("Current User");
-                treeView.Nodes[1].Nodes[0].Nodes.Add("CU_Run");
-                treeView.Nodes[1].Nodes[0].Nodes.Add("CU_RunOnce");
-                treeView.Nodes[1].Nodes.Add("All User");
-                treeView.Nodes[1].Nodes[1].Nodes.Add("AU_Run");
-                treeView.Nodes[1].Nodes[1].Nodes.Add("AU_RunOnce");
-                treeView.Nodes[1].Nodes[1].Nodes.Add("AU_Run_64");
-                treeView.Nodes[1].Nodes[1].Nodes.Add("AU_RunOnce_64");
+                treeView.Nodes[2].Nodes.Add("Current User");
+                treeView.Nodes[2].Nodes[0].Nodes.Add("CU_Run");
+                treeView.Nodes[2].Nodes[0].Nodes.Add("CU_RunOnce");
+                treeView.Nodes[2].Nodes.Add("All User");
+                treeView.Nodes[2].Nodes[1].Nodes.Add("AU_Run");
+                treeView.Nodes[2].Nodes[1].Nodes.Add("AU_RunOnce");
+                treeView.Nodes[2].Nodes[1].Nodes.Add("AU_Run_64");
+                treeView.Nodes[2].Nodes[1].Nodes.Add("AU_RunOnce_64");
 
                 treeView.Nodes.Add("Services");
 
                 treeView.Nodes.Add("KnownDLLs");
 
+                treeView.Nodes.Add("Drivers");
+
                 treeView.ExpandAll();
             }
-            catch(Exception e)
+            catch
             {
                 //MessageBox.Show("main.load_TreeView_An exception has occured !" + e.Message);
-                return;
+                //return;
             }            
         }
         public void ExportLstView2TXT(ListView lstView, String fileName)
@@ -54,25 +58,25 @@ namespace AutorunsManager.Main
                     sw.Close();
                 }//END if
             }
-            catch(Exception e)
+            catch
             {
                 //MessageBox.Show("main.ExportLstView2XML_An exception has occured !" + e.Message);
-                return;
+                //return;
             }
         }
         #endregion
 
         #region EVENTS
-        public void jump2Image(string fileName)
+        public void jump2Image(string filePath)
         {             
             try
             {
-                Process.Start("explorer.exe", string.Format("/select,\"{0}\"", fileName));
+                Process.Start("explorer.exe", string.Format("/select,\"{0}\"", filePath));
             }
-            catch(Exception e)
+            catch
             {
                 //MessageBox.Show("main.jump2Image_An exception has occured!" + e.Message);
-                return;
+                //return;
             }           
         }
         public void jump2Registry()
@@ -96,10 +100,10 @@ namespace AutorunsManager.Main
                                
                  Process.Start("regedit.exe");                     
             }
-           catch(Exception e)
+           catch
             {
                 //MessageBox.Show("main.jump2Registry_An exception has occured!" + e.Message);
-                return;
+                //return;
             }
         }
         public void pc_Shutdown()
@@ -112,9 +116,9 @@ namespace AutorunsManager.Main
                                                                             // the specified operation needs to be completed 
                                                                             // after 0 seconds
             }
-            catch(Exception e)
+            catch
             {
-                return;
+                //return;
             }
             
         }
@@ -124,9 +128,9 @@ namespace AutorunsManager.Main
             {
                 Process.Start("shutdown", "/r /t 0");  // the argument /r is to restart the computer
             }
-            catch(Exception e)
+            catch
             {
-                return;
+                //return;
             }           
         }
 
@@ -139,9 +143,9 @@ namespace AutorunsManager.Main
             {
                 ExitWindowsEx(0, 0);
             }
-            catch(Exception e)
+            catch
             {
-                return;
+                //return;
             }            
         }
         
@@ -155,9 +159,9 @@ namespace AutorunsManager.Main
                 SetSuspendState(false, true, true); //To bring your computer into Hibernate:
                 //SetSuspendState(true, true, true);
             }
-            catch(Exception e)
+            catch
             {
-                return;
+                //return;
             }
         }
         #endregion
@@ -179,7 +183,7 @@ namespace AutorunsManager.Main
                 }
                 else
                 {
-                    rkey2jump = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(AutorunsManager.full_regKey, false);
+                    rkey2jump = Registry.LocalMachine.OpenSubKey(AutorunsManager.full_regKey, false);
                 }
             }
             if(AutorunsManager.baseRegkey == Registry.CurrentUser.ToString())
@@ -190,7 +194,10 @@ namespace AutorunsManager.Main
             {
                 rkey2jump = Registry.ClassesRoot.OpenSubKey(AutorunsManager.full_regKey, false);
             }
-            rkey.SetValue("LastKey", rkey2jump.ToString());
+            if(rkey2jump != null)
+            {
+                rkey.SetValue("LastKey", rkey2jump.ToString());
+            }            
         }
         #endregion
     }//END Class

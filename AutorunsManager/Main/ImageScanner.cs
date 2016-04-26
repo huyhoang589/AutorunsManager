@@ -32,21 +32,33 @@ namespace AutorunsManager.Main
         private ImageList lstImg_HKLM_RunOnce64;
         //HKLM Services
         private List<ImageInfo> lst_HKLM_Serv;
-        private ImageList lstImg_HKLM_Serv;
+        private ImageList lstImg_HKLM_Serv;        
+        // HKLM KnownDLLs
+        private List<ImageInfo> lst_HKLM_KnownDlls;
+        private List<ImageInfo> lst_HKLM_KnownDlls_32;
+        private ImageList lstImg_HKLM_KnownDlls;
+        private ImageList lstImg_HKLM_KnownDlls_32;
+        // HKLM Drivers
+        private List<ImageInfo> lst_HKLM_Drivers;
+        private ImageList lstImg_HKLM_Drivers;
         //HKCR DLL
-        private List<ImageInfo> lst_HKCR_DLLs;
-        private ImageList lstImg_HKCR_DLLs;
+        //private List<ImageInfo> lst_HKCR_DLLs;
+        //private ImageList lstImg_HKCR_DLLs;
 
-        //Threads
+        /// <summary>
+        /// Threads for scanning
+        /// </summary>
         private Thread th_HKCU_Run;
         private Thread th_HKCU_RunOnce;
         private Thread th_HKLM_Run32;
         private Thread th_HKLM_Run64;
         private Thread th_HKLM_RunOnce32;
         private Thread th_HKLM_RunOnce64;
-        private Thread th_HKLM_Serv;
-        private Thread th_HKCR_DLLs;
-       
+        private Thread th_HKLM_Serv;        
+        private Thread th_HKLM_KnownDlls;
+        private Thread th_HKLM_Drivers;
+        //private Thread th_HKCR_DLLs;
+
         #endregion
 
         #region CONSTRUCTORS
@@ -73,32 +85,43 @@ namespace AutorunsManager.Main
             lstImg_HKLM_RunOnce64 = new ImageList();
             //HKLM  Services
             lst_HKLM_Serv = new List<ImageInfo>();
-            lstImg_HKLM_Serv = new ImageList();
+            lstImg_HKLM_Serv = new ImageList();            
+            //HKLM KnownDLLs
+            lst_HKLM_KnownDlls = new List<ImageInfo>();
+            lst_HKLM_KnownDlls_32 = new List<ImageInfo>();
+            lstImg_HKLM_KnownDlls = new ImageList();
+            lstImg_HKLM_KnownDlls_32 = new ImageList();
+            //HKLM Drivers
+            lst_HKLM_Drivers = new List<ImageInfo>();
+            lstImg_HKLM_Drivers = new ImageList();
             //HKCR DLL
-            lst_HKCR_DLLs = new List<ImageInfo>();
-            lstImg_HKCR_DLLs = new ImageList();
-            
+            //lst_HKCR_DLLs = new List<ImageInfo>();
+            //lstImg_HKCR_DLLs = new ImageList();
             #endregion
 
             #region Threads
             // Create Threads
-           ThreadStart thStart_HKCU_Run = new ThreadStart(this.load_HKCU_Run);
-           ThreadStart thStart_HKCU_RunOnce = new ThreadStart(this.load_HKCU_RunOnce);
-           ThreadStart thStart_HKLM_Run32 = new ThreadStart(this.load_HKLM_Run32);
-           ThreadStart thStart_HKLM_Run64 = new ThreadStart(this.load_HKLM_Run64);
-           ThreadStart thStart_HKLM_RunOnce32 = new ThreadStart( this.load_HKLM_RunOnce32);
-           ThreadStart thStart_HKLM_RunOnce64 = new ThreadStart( this.load_HKLM_RunOnce64);
-           ThreadStart thStart_HKLM_Serv = new ThreadStart(this.load_HKLM_Services);
-           ThreadStart thStart_HKCR_DLLs = new ThreadStart( this.load_HKCR_DLLs);
-
-           th_HKCU_Run = new Thread(thStart_HKCU_Run);
-           th_HKCU_RunOnce = new Thread(thStart_HKCU_RunOnce);
-           th_HKLM_Run32 = new Thread(thStart_HKLM_Run32);
-           th_HKLM_Run64 = new Thread(thStart_HKLM_Run64);
-           th_HKLM_RunOnce32 = new Thread(thStart_HKLM_RunOnce32);
-           th_HKLM_RunOnce64 = new Thread(thStart_HKLM_RunOnce64);
-           th_HKLM_Serv = new Thread(thStart_HKLM_Serv);
-           th_HKCR_DLLs = new Thread(thStart_HKCR_DLLs);
+            ThreadStart thStart_HKCU_Run = new ThreadStart(this.load_HKCU_Run);
+            ThreadStart thStart_HKCU_RunOnce = new ThreadStart(this.load_HKCU_RunOnce);
+            ThreadStart thStart_HKLM_Run32 = new ThreadStart(this.load_HKLM_Run32);
+            ThreadStart thStart_HKLM_Run64 = new ThreadStart(this.load_HKLM_Run64);
+            ThreadStart thStart_HKLM_RunOnce32 = new ThreadStart( this.load_HKLM_RunOnce32);
+            ThreadStart thStart_HKLM_RunOnce64 = new ThreadStart( this.load_HKLM_RunOnce64);
+            ThreadStart thStart_HKLM_Serv = new ThreadStart(this.load_HKLM_Services);
+            ThreadStart thStart_HKLM_KnownDlls = new ThreadStart(this.load_HKLM_KnownDLLs);
+            ThreadStart thStart_HKLM_Drivers = new ThreadStart(this.load_HKLM_Drivers);
+            //ThreadStart thStart_HKCR_DLLs = new ThreadStart( this.load_HKCR_DLLs);
+                    
+            th_HKCU_Run = new Thread(thStart_HKCU_Run);
+            th_HKCU_RunOnce = new Thread(thStart_HKCU_RunOnce);
+            th_HKLM_Run32 = new Thread(thStart_HKLM_Run32);
+            th_HKLM_Run64 = new Thread(thStart_HKLM_Run64);
+            th_HKLM_RunOnce32 = new Thread(thStart_HKLM_RunOnce32);
+            th_HKLM_RunOnce64 = new Thread(thStart_HKLM_RunOnce64);
+            th_HKLM_Serv = new Thread(thStart_HKLM_Serv);
+            th_HKLM_KnownDlls = new Thread(thStart_HKLM_KnownDlls);
+            th_HKLM_Drivers = new Thread(thStart_HKLM_Drivers);
+           //th_HKCR_DLLs = new Thread(thStart_HKCR_DLLs);
             #endregion
         }
         public void Start()
@@ -179,15 +202,40 @@ namespace AutorunsManager.Main
         {
             return lstImg_HKLM_Serv;
         }
+        //HKLM KnownDLLs
+        public List<ImageInfo> get_lst_HKLM_KnownDlls()
+        {
+            return lst_HKLM_KnownDlls;
+        }
+        public ImageList get_lstImg_HKLM_KnownDlls()
+        {
+            return lstImg_HKLM_KnownDlls;
+        }
+        public List<ImageInfo> get_lst_HKLM_KnownDlls_32()
+        {
+            return lst_HKLM_KnownDlls_32;
+        }
+        public ImageList get_lstImg_HKLM_KnownDlls_32()
+        {
+            return lstImg_HKLM_KnownDlls_32;
+        }
+        public List<ImageInfo> get_lst_HKLM_Drivers()
+        {
+            return lst_HKLM_Drivers;
+        }
+        public ImageList get_lstImg_HKLM_Drivers()
+        {
+            return lstImg_HKLM_Drivers;
+        }
         //HKCR DLL
-        public List<ImageInfo> get_lst_HKCR_DLLs()
-        {
-            return lst_HKCR_DLLs;
-        }
-        public ImageList get_lstImage_HKCR_DLLs()
-        {
-            return lstImg_HKCR_DLLs;
-        }
+        //public List<ImageInfo> get_lst_HKCR_DLLs()
+        //{
+        //    return lst_HKCR_DLLs;
+        //}
+        //public ImageList get_lstImage_HKCR_DLLs()
+        //{
+        //    return lstImg_HKCR_DLLs;
+        //}
         #endregion
 
         #region PRIVATE METHODS
@@ -254,28 +302,71 @@ namespace AutorunsManager.Main
             check_InvalidImage(AutorunsManager.invalidImages, lst_HKLM_Serv);
             check_missImage(lst_HKLM_Serv);
         }
-        private void load_HKCR_DLLs()
-        {
-            HKClassesRoot CR_DLL = new HKClassesRoot();
-            CR_DLL.load_HKCU_DLL();
-            lst_HKCR_DLLs = CR_DLL.get_HKCR_DLL();
-            Icon DllsIcon = Properties.Resources.dll;
-            foreach (ImageInfo img in lst_HKCR_DLLs)
-            {
-                lstImg_HKCR_DLLs.Images.Add(img.get_imageName(), DllsIcon);
-            }
-            check_missImage(lst_HKCR_DLLs);            
+        private void load_HKLM_KnownDLLs()
+        {            
+            HKLocalMachine LM_KnownDLLs = new HKLocalMachine();
+            LM_KnownDLLs.load_HKLM_KnownDLLs();
+            lst_HKLM_KnownDlls = LM_KnownDLLs.get_HKLM_KnownDLLs();
+            lstImg_HKLM_KnownDlls = get_imgLst_from_lstImgInfo(lst_HKLM_KnownDlls);
+            check_InvalidImage(AutorunsManager.invalidImages, lst_HKLM_KnownDlls);
+            check_missImage(lst_HKLM_KnownDlls);
+
+            lst_HKLM_KnownDlls_32 = LM_KnownDLLs.get_HKLM_KnownDLLs_32();            
+            lstImg_HKLM_KnownDlls_32 = get_imgLst_from_lstImgInfo(lst_HKLM_KnownDlls_32);
+            check_InvalidImage(AutorunsManager.invalidImages, lst_HKLM_KnownDlls_32);
+            check_missImage(lst_HKLM_KnownDlls_32);
         }
+        private void load_HKLM_Drivers()
+        {
+            HKLocalMachine LM_Drivers = new HKLocalMachine();
+            LM_Drivers.load_HKLM_Drivers();
+            lst_HKLM_Drivers = LM_Drivers.get_HKLM_Drivers();
+            lstImg_HKLM_Drivers = get_imgLst_from_lstImgInfo(lst_HKLM_Drivers);
+            check_InvalidImage(AutorunsManager.invalidImages, lst_HKLM_Drivers);
+            check_missImage(lst_HKLM_Drivers);
+        }
+        //private void load_HKCR_DLLs()
+        //{
+        //    HKClassesRoot CR_DLL = new HKClassesRoot();
+        //    CR_DLL.load_HKCU_DLL();
+        //    lst_HKCR_DLLs = CR_DLL.get_HKCR_DLL();
+        //    Icon DllsIcon = Properties.Resources.dll;
+        //    foreach (ImageInfo img in lst_HKCR_DLLs)
+        //    {
+        //        lstImg_HKCR_DLLs.Images.Add(img.get_imageName(), DllsIcon);
+        //    }
+        //    check_missImage(lst_HKCR_DLLs);            
+        //}
         private void threads_Start()
         {
+            th_HKCU_Run.IsBackground = true;
             th_HKCU_Run.Start();
+
+            th_HKCU_RunOnce.IsBackground = true;
             th_HKCU_RunOnce.Start();
+
+            th_HKLM_Run32.IsBackground = true;
             th_HKLM_Run32.Start();
+
+            th_HKLM_Run64.IsBackground = true;
             th_HKLM_Run64.Start();
+
+            th_HKLM_RunOnce32.IsBackground = true;
             th_HKLM_RunOnce32.Start();
+
+            th_HKLM_RunOnce64.IsBackground = true;
             th_HKLM_RunOnce64.Start();
+
+            th_HKLM_Serv.IsBackground = true;
             th_HKLM_Serv.Start();
-            th_HKCR_DLLs.Start();
+            
+            th_HKLM_KnownDlls.IsBackground = true;
+            th_HKLM_KnownDlls.Start();
+
+            th_HKLM_Drivers.IsBackground = true;
+            th_HKLM_Drivers.Start();
+
+            //th_HKCR_DLLs.Start();
         }
         private void threads_End()
         {
@@ -285,9 +376,11 @@ namespace AutorunsManager.Main
             th_HKLM_Run64.Join();
             th_HKLM_RunOnce32.Join();
             th_HKLM_RunOnce64.Join();
-            th_HKLM_Serv.Join();
-            th_HKCR_DLLs.Join();
-        }      
+            th_HKLM_Serv.Join();            
+            th_HKLM_KnownDlls.Join();
+            th_HKLM_Drivers.Join();
+            //th_HKCR_DLLs.Join();
+        }
         private static ImageList get_imgLst_from_lstImgInfo(List<ImageInfo> lstImageInfo)
         {
             ImageList lstImage = new ImageList();

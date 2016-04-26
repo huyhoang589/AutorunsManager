@@ -77,16 +77,14 @@ namespace RegistryInfo
                                             #endregion
                                         }//END IF
                                     }// END IF                                                                                      
-                                }
-                                //if (AutorunsManager.AutorunsManager.Terminate) break;
+                                }                                
                             }
                         }
                     }//END try
-                    catch (Exception e)
+                    catch
                     {
-                        MessageBox.Show("HKCR_DLLs_An exception has occured!  " + e.Message);
-                    }
-                    //if (AutorunsManager.AutorunsManager.Terminate) break;
+                        //MessageBox.Show("HKCR_DLLs_An exception has occured!  " + e.Message);
+                    }                   
                 }
                 #endregion
             CR_idKey.Close();

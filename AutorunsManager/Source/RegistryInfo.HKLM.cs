@@ -18,11 +18,16 @@ namespace RegistryInfo
         private string regKey_RunOnce64 = "Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce";
         private string regKey_RunOnce32 = "Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\RunOnce";
         private string regKey_Services = "System\\CurrentControlSet\\Services";
+        private string regKey_KnownDLLs = "System\\CurrentControlSet\\Control\\Session Manager\\KnownDLLs";
+
         private List<ImageInfo> listHKLM_Run_32;
         private List<ImageInfo> listHKLM_Run_64;
         private List<ImageInfo> listHKLM_RunOnce_32;
         private List<ImageInfo> listHKLM_RunOnce_64;
         private List<ImageInfo> listHKLM_Services;
+        private List<ImageInfo> listHKLM_Drivers;
+        private List<ImageInfo> listHKLM_KnownDlls;
+        private List<ImageInfo> listHKLM_KnownDlls_32;
         #endregion
 
         #region CONSTRUCTOR
@@ -33,6 +38,9 @@ namespace RegistryInfo
             listHKLM_RunOnce_32= new List<ImageInfo>();
             listHKLM_RunOnce_64= new List<ImageInfo>();
             listHKLM_Services = new List<ImageInfo>();
+            listHKLM_Drivers = new List<ImageInfo>();
+            listHKLM_KnownDlls = new List<ImageInfo>();
+            listHKLM_KnownDlls_32 = new List<ImageInfo>();
         }
         #endregion
 
@@ -52,9 +60,9 @@ namespace RegistryInfo
                         infoRun32.set_typeOS("x32");
                         listHKLM_Run_32.Add(infoRun32);
                     }
-                    catch(Exception e)
+                    catch
                     {
-                        MessageBox.Show("HKLM_Run32_An exception has occured!  " + e.Message);                            
+                        //MessageBox.Show("HKLM_Run32_An exception has occured!  " + e.Message);                            
                     }                                                                      
                 }
                 Run_32.Close();          
@@ -74,9 +82,9 @@ namespace RegistryInfo
                     infoRun64.set_typeOS("x64");
                     listHKLM_Run_64.Add(infoRun64);
                 }
-                catch (Exception e)
+                catch 
                 {
-                    MessageBox.Show("HKLM_Run64_An exception has occured!  " + e.Message);
+                    //MessageBox.Show("HKLM_Run64_An exception has occured!  " + e.Message);
                 }
             }
             Run_64.Close();
@@ -96,9 +104,9 @@ namespace RegistryInfo
                     infoRunOnce32.set_typeOS("x32");
                     listHKLM_RunOnce_32.Add(infoRunOnce32);
                 }
-                catch (Exception e)
+                catch 
                 {
-                    MessageBox.Show("HKLM_RunOnce32_An exception has occured!  " + e.Message);
+                    //MessageBox.Show("HKLM_RunOnce32_An exception has occured!  " + e.Message);
                 }
             }
             RunOnce_32.Close();
@@ -118,9 +126,9 @@ namespace RegistryInfo
                     infoRunOnce64.set_typeOS("x64");
                     listHKLM_RunOnce_64.Add(infoRunOnce64);
                 }
-                catch (Exception e)
+                catch 
                 {
-                    MessageBox.Show("HKLM_RunOnce64_An exception has occured!  " + e.Message);
+                    //MessageBox.Show("HKLM_RunOnce64_An exception has occured!  " + e.Message);
                 }
 
             }
@@ -141,11 +149,65 @@ namespace RegistryInfo
                     listHKLM_Services.Add(infoServices);              
                     Services.Close();
                 }
-                catch(Exception e)
+                catch
                 {
-                    MessageBox.Show("HKLM_Services_An exception has occured!  " + e.Message);
+                    //MessageBox.Show("HKLM_Services_An exception has occured!  " + e.Message);
                 }
             }
+        }
+        public void load_HKLM_Drivers()
+        {
+            foreach (ServiceController service in ServiceController.GetDevices())
+            {
+                try
+                {
+                    RegistryKey Drivers = Registry.LocalMachine.OpenSubKey(regKey_Services + "\\" + service.ServiceName);
+                    string filePath = Drivers.GetValue("ImagePath").ToString();
+                    ImageInfo iInfo = new ImageInfo(service.ServiceName, filePath,true);
+                    iInfo.set_registrySection("HKLM\\" + regKey_Services);
+                    iInfo.set_baseRegistryKey(Registry.LocalMachine.ToString());
+                    iInfo.set_full_registrySection(regKey_Services + "\\" + service.ServiceName);
+                    listHKLM_Drivers.Add(iInfo);
+                    Drivers.Close();
+                }
+                catch
+                {
+                    //MessageBox.Show("HKLM_Services_An exception has occured!  " + e.Message);
+                }
+            }
+        }
+        public void load_HKLM_KnownDLLs()
+        {
+            RegistryKey KnownDLLs = Registry.LocalMachine.OpenSubKey(regKey_KnownDLLs);
+            string filePath = KnownDLLs.GetValue("DllDirectory").ToString();
+            string filePath32 = KnownDLLs.GetValue("DllDirectory32").ToString();
+            foreach (string image in KnownDLLs.GetValueNames())
+            {
+                try
+                {
+                    if (image != "DllDirectory" && image != "DllDirectory32")
+                    {
+                        string fileName = KnownDLLs.GetValue(image).ToString();
+
+                        ImageInfo iInfo = new ImageInfo(image, filePath + "\\" + fileName);
+                        iInfo.set_registrySection("HKLM\\" + regKey_KnownDLLs);
+                        iInfo.set_baseRegistryKey(Registry.LocalMachine.ToString());
+                        iInfo.set_full_registrySection(regKey_KnownDLLs);
+                        listHKLM_KnownDlls.Add(iInfo);
+
+                        ImageInfo iInfo32 = new ImageInfo(image, filePath32 + "\\" + fileName);
+                        iInfo32.set_registrySection("HKLM\\" + regKey_KnownDLLs);
+                        iInfo32.set_baseRegistryKey(Registry.LocalMachine.ToString());
+                        iInfo32.set_full_registrySection(regKey_KnownDLLs);
+                        listHKLM_KnownDlls.Add(iInfo32);
+                    }//end IF                                            
+                }
+                catch(Exception e)
+                {
+                    MessageBox.Show("HKLM_KnownDLLs_An exception has occured! " + e.Message);
+                }                
+            }
+            KnownDLLs.Close();
         }
         
         #endregion
@@ -171,7 +233,19 @@ namespace RegistryInfo
         {
             return listHKLM_Services;
         }
+        public List<ImageInfo> get_HKLM_Drivers()
+        {
+            return listHKLM_Drivers;
+        }
+        public List<ImageInfo> get_HKLM_KnownDLLs()
+        {
+            return listHKLM_KnownDlls;
+        }
+        public List<ImageInfo> get_HKLM_KnownDLLs_32()
+        {
+            return listHKLM_KnownDlls_32;
+        }
         #endregion
-       
+
     }
 }

@@ -447,7 +447,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.mainMenu;
             this.Name = "AutorunsManager";
-            this.Text = "BCY - Autoruns Manager";
+            this.Text = "BCY - Autoruns Manager Portable";
             this.Load += new System.EventHandler(this.AutorunsManager_Load);
             this.mainMenu.ResumeLayout(false);
             this.mainMenu.PerformLayout();

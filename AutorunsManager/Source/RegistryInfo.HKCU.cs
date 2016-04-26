@@ -40,9 +40,9 @@ namespace RegistryInfo
                     info.set_full_registrySection(strRegKey_Run );
                     listHKCU_Run.Add(info);                                                                    
                 }
-                catch (Exception e)
+                catch 
                 {
-                    MessageBox.Show("HKCU_Run_An exception has occured!  " + e.Message);
+                    //MessageBox.Show("HKCU_Run_An exception has occured!  " + e.Message);
                 }
             }
             regKey_Run.Close();
@@ -59,9 +59,9 @@ namespace RegistryInfo
                     info.set_registrySection("HKCU\\" + strRegKey_RunOnce);
                     listHKCU_RunOnce.Add(info);
                 }
-                catch (Exception e)
+                catch 
                 {
-                    MessageBox.Show("HKCU_RunOnce_An exception has occured!  " + e.Message);
+                    //MessageBox.Show("HKCU_RunOnce_An exception has occured!  " + e.Message);
                 }
             }
             regKey_RunOnce.Close();

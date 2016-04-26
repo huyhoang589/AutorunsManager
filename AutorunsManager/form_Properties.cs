@@ -33,7 +33,7 @@ namespace AutorunsManager
         #region METHODS
         private void form_load()
         {
-            string fileName = AutorunsManager.selectedFile;
+            string fileName = AutorunsManager.selectedFileName;
             tabPageProperty.Text = fileName;
             tabProperties.ImageList = AutorunsManager.lstImg_everything;
             int imageIndex = AutorunsManager.lstImg_everything.Images.IndexOfKey(fileName);

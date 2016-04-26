@@ -33,12 +33,20 @@ namespace AutorunsManager
         private ImageList lstImg_HKLM_RunOnce64 ;
         //HKLM Services
         private List<ImageInfo> lst_HKLM_Serv ;
-        private ImageList lstImg_HKLM_Serv;
+        private ImageList lstImg_HKLM_Serv;        
+        //HKLM KnownDLLs;
+        private List<ImageInfo> lst_HKLM_KnownDlls;
+        private List<ImageInfo> lst_HKLM_KnownDlls_32;
+        private ImageList lstImg_HKLM_KnownDlls;
+        private ImageList lstImg_HKLM_KnownDlls_32;
+        //HKLM Drivers
+        private List<ImageInfo> lst_HKLM_Drivers;
+        private ImageList lstImg_HKLM_Drivers;
         //HKCR DLL
-        private List<ImageInfo> lst_HKCR_DLLs ;
-        private ImageList lstImg_HKCR_DLLs ;
+        //private List<ImageInfo> lst_HKCR_DLLs ;
+        //private ImageList lstImg_HKCR_DLLs ;
         #endregion
-     
+
         #region ListView params
         //Load data to lstView
         public static List<ImageInfo> lst_everything ;
@@ -49,10 +57,12 @@ namespace AutorunsManager
         private ImageList lstImg_cu ;
         private List<ImageInfo> lst_au;
         private ImageList lstImg_au ;
+        private List<ImageInfo> lst_KnownDLLs;
+        private ImageList lstImg_KnownDLLs;
         #endregion
        
         #region Public params
-        public static string selectedFile;
+        public static string selectedFilePath, selectedFileName; // jump to image|registry
         public static string baseRegkey;    //HKLM | HKCU | HKCR
         public static string full_regKey; // regKey value to Jump to;
         public static string typeOS;    // 32bit | 64bit
@@ -63,8 +73,8 @@ namespace AutorunsManager
         private bool checkScan;
 
         //check if Scanning process is terminated by pressing ESC
-        public static bool Terminate;
-        KeyboardHook hook ;
+        //public static bool Terminate;
+        //KeyboardHook hook ;
         #endregion
 
         #region CONSTRUCTORS
@@ -90,12 +100,10 @@ namespace AutorunsManager
             #endregion
 
             checkScan = false;
-            Terminate = false;
+            //Terminate = false;
             load_Buttons();
             MainMethods main = new MainMethods();
             main.load_TreeView(treeViewImage);
-
-           
         }
         private void treeViewImage_DrawNode(object sender, DrawTreeNodeEventArgs e)
         {
@@ -154,10 +162,11 @@ namespace AutorunsManager
         {
             try
             {
-                selectedFile = lstViewImage.SelectedItems[0].Text;
+                selectedFileName = lstViewImage.SelectedItems[0].Text;
+                selectedFilePath = lstViewImage.SelectedItems[0].SubItems[4].Text;
                 foreach (ImageInfo img in lst_everything)
                 {
-                    if (img.get_imageName() == selectedFile)
+                    if ((img.get_imageName() == selectedFileName) && (img.get_imageName() == selectedFileName))
                     {
                         MainMethods main = new MainMethods();
                         main.jump2Image(img.get_imagePath());
@@ -173,10 +182,11 @@ namespace AutorunsManager
         {
             try
             {
-                selectedFile = lstViewImage.SelectedItems[0].Text;
+                selectedFileName = lstViewImage.SelectedItems[0].Text;
+                selectedFilePath = lstViewImage.SelectedItems[0].SubItems[4].Text;
                 foreach (ImageInfo img in lst_everything)
                 {
-                    if (img.get_imageName() == selectedFile)
+                    if ((img.get_imageName() == selectedFileName) && (img.get_imagePath() == selectedFilePath))
                     {
                         baseRegkey = img.get_baseRegistryKey();
                         full_regKey = img.get_full_registrySection();
@@ -195,7 +205,7 @@ namespace AutorunsManager
         {
             try
             {                
-                selectedFile = lstViewImage.SelectedItems[0].Text;
+                selectedFileName = lstViewImage.SelectedItems[0].Text;
                 form_Properties fProperties = new form_Properties();
                 fProperties.ShowDialog();                     
             }
@@ -282,7 +292,7 @@ namespace AutorunsManager
         {
             try
             {
-                selectedFile = lstViewImage.SelectedItems[0].Text;
+                selectedFileName = lstViewImage.SelectedItems[0].Text;
                 form_Properties fProperties = new form_Properties();
                 fProperties.ShowDialog();
             }
@@ -320,10 +330,11 @@ namespace AutorunsManager
         {
             try
             {
-                selectedFile = lstViewImage.SelectedItems[0].Text;
+                selectedFileName = lstViewImage.SelectedItems[0].Text;
+                selectedFilePath = lstViewImage.SelectedItems[0].SubItems[4].Text;
                 foreach (ImageInfo img in lst_everything)
                 {
-                    if (img.get_imageName() == selectedFile)
+                    if ((img.get_imageName() == selectedFileName) && (img.get_imagePath() == selectedFilePath))
                     {
                         MainMethods main = new MainMethods();
                         main.jump2Image(img.get_imagePath());
@@ -332,17 +343,19 @@ namespace AutorunsManager
             }
             catch
             {
-                return;
+                
+                //return;
             }
         }
         private void jumpToRegistryToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
-                selectedFile = lstViewImage.SelectedItems[0].Text;
+                selectedFileName = lstViewImage.SelectedItems[0].Text;
+                selectedFilePath = lstViewImage.SelectedItems[0].SubItems[4].Text;
                 foreach (ImageInfo img in lst_everything)
                 {
-                    if (img.get_imageName() == selectedFile)
+                    if ((img.get_imageName()== selectedFileName) && (img.get_imagePath() == selectedFilePath))
                     {
                         baseRegkey = img.get_baseRegistryKey();
                         full_regKey = img.get_full_registrySection();
@@ -352,16 +365,17 @@ namespace AutorunsManager
                     }
                 }
             }
-            catch
+            catch (NullReferenceException ex)
             {
-                return;
+                MessageBox.Show("jump2Registry_An exception has occured!" + ex.Message);
+                //return;
             }
         }
         private void propertiesAltEnterToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             try
             {
-                selectedFile = lstViewImage.SelectedItems[0].Text;
+                selectedFileName = lstViewImage.SelectedItems[0].Text;
                 form_Properties fProperties = new form_Properties();
                 fProperties.ShowDialog();
             }
@@ -375,6 +389,106 @@ namespace AutorunsManager
         #endregion
 
         #region PRIVATE METHODS
+        private void Init_Params()
+        {
+            #region Init Params
+            //HKCU Run
+            lst_HKCU_Run = new List<ImageInfo>();
+            lstImg_HKCU_Run = new ImageList();
+            //HKCU RunOnce
+            lst_HKCU_RunOnce = new List<ImageInfo>();
+            lstImg_HKCU_RunOnce = new ImageList();
+            //HKLM Run32
+            lst_HKLM_Run32 = new List<ImageInfo>();
+            lstImg_HKLM_Run32 = new ImageList();
+            //HKLM Run64
+            lst_HKLM_Run64 = new List<ImageInfo>();
+            lstImg_HKLM_Run64 = new ImageList();
+            //HKLM RunOnce32
+            lst_HKLM_RunOnce32 = new List<ImageInfo>();
+            lstImg_HKLM_RunOnce32 = new ImageList();
+            //HKLM RunOnce64
+            lst_HKLM_RunOnce64 = new List<ImageInfo>();
+            lstImg_HKLM_RunOnce64 = new ImageList();
+            //HKLM  Services
+            lst_HKLM_Serv = new List<ImageInfo>();
+            lstImg_HKLM_Serv = new ImageList();            
+            //HKLM KnownDLLs
+            lst_HKLM_KnownDlls = new List<ImageInfo>();
+            lst_HKLM_KnownDlls_32 = new List<ImageInfo>();
+            lstImg_HKLM_KnownDlls = new ImageList();
+            lstImg_HKLM_KnownDlls_32 = new ImageList();
+            //HKLM Drivers
+            lst_HKLM_Drivers = new List<ImageInfo>();
+            lstImg_HKLM_Drivers = new ImageList();
+            //HKCR DLL
+            //lst_HKCR_DLLs = new List<ImageInfo>();
+            //lstImg_HKCR_DLLs = new ImageList();
+
+            invalidImages = new List<string>();
+            // hook = new KeyboardHook();
+            #endregion
+
+            #region data to lstView
+            //Load data to lstView
+            lst_everything = new List<ImageInfo>();
+            lstImg_everything = new ImageList();
+            lst_registry = new List<ImageInfo>();
+            lstImg_registry = new ImageList();
+            lst_cu = new List<ImageInfo>();
+            lstImg_cu = new ImageList();
+            lst_au = new List<ImageInfo>();
+            lstImg_au = new ImageList();
+            lst_KnownDLLs = new List<ImageInfo>();
+            lstImg_KnownDLLs = new ImageList();
+            #endregion
+        }
+        private void scanAll()
+        {
+            ImageScanner scanner = new ImageScanner();
+            scanner.Start();
+            #region GET DATA
+            //HKCU Run
+            this.lst_HKCU_Run = scanner.get_lst_HKCU_Run();
+            this.lstImg_HKCU_Run = scanner.get_lstImage_HKCU_Run();
+            //HKCU RunOnce
+            this.lst_HKCU_RunOnce = scanner.get_lst_HKCU_RunOnce();
+            this.lstImg_HKCU_RunOnce = scanner.get_lstImage_HKCU_RunOnce();
+            //HKLM Run32
+            this.lst_HKLM_Run32 = scanner.get_lst_HKLM_Run32();
+            this.lstImg_HKLM_Run32 = scanner.get_lstImage_HKLM_Run32();
+            //HKLM Run64
+            this.lst_HKLM_Run64 = scanner.get_lst_HKLM_Run64();
+            this.lstImg_HKLM_Run64 = scanner.get_lstImage_HKLM_Run64();
+            //HKLM RunOnce32
+            this.lst_HKLM_RunOnce32 = scanner.get_lst_HKLM_RunOnce32();
+            this.lstImg_HKLM_RunOnce32 = scanner.get_lstImage_HKLM_RunOnce32();
+            //HKLM RunOnce64
+            this.lst_HKLM_RunOnce64 = scanner.get_lst_HKLM_RunOnce64();
+            this.lstImg_HKLM_RunOnce64 = scanner.get_lstImage_HKLM_RunOnce64();
+            //HKLM  Services
+            this.lst_HKLM_Serv = scanner.get_lst_HKLM_Serv();
+            this.lstImg_HKLM_Serv = scanner.get_lstImage_HKLM_Serv();            
+            //HKLM KnownDLLs
+            this.lst_HKLM_KnownDlls = scanner.get_lst_HKLM_KnownDlls();
+            this.lst_HKLM_KnownDlls_32 = scanner.get_lst_HKLM_KnownDlls_32();
+            this.lstImg_HKLM_KnownDlls = scanner.get_lstImg_HKLM_KnownDlls();
+            this.lstImg_HKLM_KnownDlls_32 = scanner.get_lstImg_HKLM_KnownDlls_32();
+            //HKLM Drivers
+            this.lst_HKLM_Drivers = scanner.get_lst_HKLM_Drivers();
+            this.lstImg_HKLM_Drivers = scanner.get_lstImg_HKLM_Drivers();
+            //HKCR DLL
+            //this.lst_HKCR_DLLs = scanner.get_lst_HKCR_DLLs();
+            //this.lstImg_HKCR_DLLs = scanner.get_lstImage_HKCR_DLLs();
+            #endregion         
+            #region LOAD DATA TO lstView
+            load_lstView_everything();
+            load_lstView_registry();
+            load_lstView_CU();
+            load_lstView_AU();
+            load_lstView_KnownDLLs();
+            #endregion
+        }
         private void load_lstView(string nodeName)
         {
             switch (nodeName)
@@ -387,14 +501,15 @@ namespace AutorunsManager
                         if (!checkScan)
                         {
                             Thread t_scan = new Thread(new ThreadStart(this.scanAll));
+                            t_scan.IsBackground = true;
                             t_scan.Start();
-                            this.labelStatus.Text = "Scanning (Esc to cancel)";
-                            // register the event that is fired after the key press.
-                            hook.KeyPressed += new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
-                            // register the ESC as hot key.
-                            hook.RegisterHotKey(Main.ModifierKeys.None, Keys.Escape);
+                            this.labelStatus.Text = "Scanning";
+                            //// register the event that is fired after the key press.
+                            //hook.KeyPressed += new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
+                            //// register the ESC as hot key.
+                            //hook.RegisterHotKey(Main.ModifierKeys.None, Keys.Escape);
                             t_scan.Join();
-                            this.labelStatus.Text = "READY!";                                                   
+                            this.labelStatus.Text = "READY!";
                             checkScan = true;
                         }
                         #endregion
@@ -462,7 +577,7 @@ namespace AutorunsManager
                     }
                 #endregion
                 #endregion
-                #region services + dlls
+                #region services + dlls + drivers
                 case "services":
                     {
                         lstViewImage.Items.Clear();
@@ -472,50 +587,19 @@ namespace AutorunsManager
                 case "knowndlls":
                     {
                         lstViewImage.Items.Clear();
-                        showImage(lst_HKCR_DLLs, lstImg_HKCR_DLLs);
+                        showImage(lst_KnownDLLs, lstImg_KnownDLLs);                       
+                        break;
+                    }                
+                case "drivers":
+                    {
+                        lstViewImage.Items.Clear();
+                        showImage(lst_HKLM_Drivers, lstImg_HKLM_Drivers);
                         break;
                     }
                 #endregion
                 default: break;
             }
-        }       
-        private void scanAll()
-        {            
-            ImageScanner scanner = new ImageScanner();
-            scanner.Start();
-            #region GET DATA
-            //HKCU Run
-            this.lst_HKCU_Run = scanner.get_lst_HKCU_Run();
-            this.lstImg_HKCU_Run = scanner.get_lstImage_HKCU_Run();
-            //HKCU RunOnce
-            this.lst_HKCU_RunOnce = scanner.get_lst_HKCU_RunOnce();
-            this.lstImg_HKCU_RunOnce = scanner.get_lstImage_HKCU_RunOnce();
-            //HKLM Run32
-            this.lst_HKLM_Run32 = scanner.get_lst_HKLM_Run32();
-            this.lstImg_HKLM_Run32 = scanner.get_lstImage_HKLM_Run32();
-            //HKLM Run64
-            this.lst_HKLM_Run64 = scanner.get_lst_HKLM_Run64();
-            this.lstImg_HKLM_Run64 = scanner.get_lstImage_HKLM_Run64();
-            //HKLM RunOnce32
-            this.lst_HKLM_RunOnce32 = scanner.get_lst_HKLM_RunOnce32();
-            this.lstImg_HKLM_RunOnce32 = scanner.get_lstImage_HKLM_RunOnce32();
-            //HKLM RunOnce64
-            this.lst_HKLM_RunOnce64 = scanner.get_lst_HKLM_RunOnce64();
-            this.lstImg_HKLM_RunOnce64 = scanner.get_lstImage_HKLM_RunOnce64();
-            //HKLM  Services
-            this.lst_HKLM_Serv = scanner.get_lst_HKLM_Serv();
-            this.lstImg_HKLM_Serv = scanner.get_lstImage_HKLM_Serv();
-            //HKCR DLL
-            this.lst_HKCR_DLLs = scanner.get_lst_HKCR_DLLs();
-            this.lstImg_HKCR_DLLs = scanner.get_lstImage_HKCR_DLLs();
-            #endregion         
-            #region LOAD DATA TO lstView
-            load_lstView_everything();
-            load_lstView_registry();
-            load_lstView_CU();
-            load_lstView_AU();
-            #endregion
-        }      
+        }           
         private void load_lstView_everything()
         {
             #region HKCU
@@ -556,14 +640,29 @@ namespace AutorunsManager
                 lst_everything.Add(img);
                 lstImg_everything.Images.Add(img.get_imageName(), lstImg_HKLM_Serv.Images[img.get_imageName()]);
             }
-            #endregion
-            #region HKCR
-            foreach (ImageInfo img in lst_HKCR_DLLs)
+            foreach(ImageInfo img in lst_HKLM_KnownDlls)
             {
                 lst_everything.Add(img);
-                lstImg_everything.Images.Add(img.get_imageName(), Properties.Resources.dll);
-            }       
-        #endregion
+                lstImg_everything.Images.Add(img.get_imageName(), lstImg_HKLM_KnownDlls.Images[img.get_imageName()]);
+            }
+            foreach (ImageInfo img in lst_HKLM_KnownDlls_32)
+            {
+                lst_everything.Add(img);
+                lstImg_everything.Images.Add(img.get_imageName(), lstImg_HKLM_KnownDlls_32.Images[img.get_imageName()]);
+            }
+            foreach(ImageInfo img in lst_HKLM_Drivers)
+            {
+                lst_everything.Add(img);
+                lstImg_everything.Images.Add(img.get_imageName(), lstImg_HKLM_Drivers.Images[img.get_imageName()]);
+            }
+            #endregion
+            #region HKCR
+            //foreach (ImageInfo img in lst_HKCR_DLLs)
+            //{
+            //    lst_everything.Add(img);
+            //    lstImg_everything.Images.Add(img.get_imageName(), Properties.Resources.dll);
+            //}       
+            #endregion
         }
         private void load_lstView_registry()
         {
@@ -642,6 +741,21 @@ namespace AutorunsManager
             }
             #endregion
         }       
+        private void load_lstView_KnownDLLs()
+        {
+            #region HLKM
+            foreach (ImageInfo img in lst_HKLM_KnownDlls)
+            {
+                lst_KnownDLLs.Add(img);
+                lstImg_KnownDLLs.Images.Add(img.get_imageName(), lstImg_HKLM_KnownDlls.Images[img.get_imageName()]);
+            }
+            foreach (ImageInfo img in lst_HKLM_KnownDlls_32)
+            {
+                lst_KnownDLLs.Add(img);
+                lstImg_KnownDLLs.Images.Add(img.get_imageName(), lstImg_HKLM_KnownDlls_32.Images[img.get_imageName()]);
+            }
+            #endregion
+        }
         private void showImage(List<ImageInfo> lstImgInfo, ImageList imgLst)
         {
             if (lstImgInfo.Count > 0)
@@ -675,60 +789,18 @@ namespace AutorunsManager
         }
         private void load_Refresh()
         {
-            this.Init_Params();
+            this.Init_Params();            
             this.treeViewImage.SelectedNode = this.treeViewImage.Nodes[0];
+            this.lstViewImage.Items.Clear();
             Thread t_scan = new Thread(new ThreadStart(this.scanAll));
+            t_scan.IsBackground = true;
             t_scan.Start();
             this.labelStatus.Text = "Scanning";
             t_scan.Join();
             this.labelStatus.Text = "READY!";
             checkScan = true;
             showImage(lst_everything, lstImg_everything);
-        }
-        private void Init_Params()
-        {
-            #region Init Params
-            //HKCU Run
-            lst_HKCU_Run = new List<ImageInfo>();
-            lstImg_HKCU_Run = new ImageList();
-            //HKCU RunOnce
-            lst_HKCU_RunOnce = new List<ImageInfo>();
-            lstImg_HKCU_RunOnce = new ImageList();
-            //HKLM Run32
-            lst_HKLM_Run32 = new List<ImageInfo>();
-            lstImg_HKLM_Run32 = new ImageList();
-            //HKLM Run64
-            lst_HKLM_Run64 = new List<ImageInfo>();
-            lstImg_HKLM_Run64 = new ImageList();
-            //HKLM RunOnce32
-            lst_HKLM_RunOnce32 = new List<ImageInfo>();
-            lstImg_HKLM_RunOnce32 = new ImageList();
-            //HKLM RunOnce64
-            lst_HKLM_RunOnce64 = new List<ImageInfo>();
-            lstImg_HKLM_RunOnce64 = new ImageList();
-            //HKLM  Services
-            lst_HKLM_Serv = new List<ImageInfo>();
-            lstImg_HKLM_Serv = new ImageList();
-            //HKCR DLL
-            lst_HKCR_DLLs = new List<ImageInfo>();
-            lstImg_HKCR_DLLs = new ImageList();
-
-            invalidImages = new List<string>();
-            hook = new KeyboardHook();
-            #endregion            
-
-            #region data to lstView
-            //Load data to lstView
-             lst_everything = new List<ImageInfo>();
-             lstImg_everything = new ImageList();
-             lst_registry = new List<ImageInfo>();
-             lstImg_registry = new ImageList();
-             lst_cu = new List<ImageInfo>();
-             lstImg_cu = new ImageList();
-             lst_au = new List<ImageInfo>();
-             lstImg_au = new ImageList();
-            #endregion
-        }
+        }       
         private void load_Buttons()
         {
             this.btnRun.Image = Properties.Resources.run;
@@ -762,12 +834,12 @@ namespace AutorunsManager
                                             "Phong Ky Thuat - Cuc QLKT NVMM \n" +
                                             "Ban Co Yeu Chinh Phu" );
         }
-        private void hook_KeyPressed(object sender, KeyPressedEventArgs e)
-        {
-            // if ESC is pressed, scanning process will be terminated
-            Terminate = true;            
-            //this.labelStatus.Text = e.Modifier.ToString() + " + " + e.Key.ToString();
-        }
+        //private void hook_KeyPressed(object sender, KeyPressedEventArgs e)
+        //{
+        //    // if ESC is pressed, scanning process will be terminated
+        //    Terminate = true;            
+        //    //this.labelStatus.Text = e.Modifier.ToString() + " + " + e.Key.ToString();
+        //}
   
         #endregion  
 

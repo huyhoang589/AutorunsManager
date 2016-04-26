@@ -125,6 +125,44 @@ namespace ImageInformation
             }
             
         }
+        public ImageInfo(string driverName, string driverPath, bool isDriver = true)
+        {
+            try
+            {
+                string fPath = this.driverPath(driverPath);
+                this.imageName = driverName;
+                if (File.Exists(fPath))
+                {
+                    FileVersionInfo fInfo = FileVersionInfo.GetVersionInfo(fPath);
+                    this.imagePath = fInfo.FileName;
+                    this.imageDescription = fInfo.FileDescription;
+                    this.publisher = fInfo.CompanyName;
+                    this.fileVersion = fInfo.FileVersion;
+                    this.internalName = fInfo.InternalName;
+                    this.originalName = fInfo.OriginalFilename;
+                    this.productName = fInfo.ProductName;
+                    this.productVersion = fInfo.ProductVersion;
+                    this.copyright = fInfo.LegalCopyright;
+                    this.isPatched = fInfo.IsPatched;
+                }
+                //else
+                //{
+                //    MessageBox.Show(fileName + " File not exist !");
+                //}          
+                //if(this.isPatched == false)
+                //{
+                //    this.imageStatus = "valid";
+                //}
+                //else
+                //{
+                //    this.imageStatus = "invaild";
+                //}
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("ImageInformation_An exception has occured!  " + e.Message);
+            }
+        }
         #endregion
 
         #region SET
@@ -322,6 +360,31 @@ namespace ImageInformation
                 }
             }          
             return imagePath;
+        }
+        private string driverPath(string Path)
+        {
+            string _path = null;
+            if (Path.ToLower().Contains("system32"))
+            {
+                _path = "C:\\Windows\\System32" + this.Substring(Path.ToLower(), "system32",".sys") + ".sys";
+            }
+            if(Path.ToLower().Contains("syswow64"))
+            {
+                _path = "C:\\Windows\\Syswow64" + this.Substring(Path.ToLower(), "syswow64", ".sys") + ".sys";
+            }
+            if(Path.ToLower().Contains("c:\\"))
+            {
+                _path = "C:\\" + this.Substring(Path.ToLower(), "c:\\", ".sys") + ".sys";
+            }         
+            if (Path.ToLower().Contains("d:\\"))
+            {
+                _path = "D:\\" + this.Substring(Path.ToLower(), "d:\\", ".sys") + ".sys";
+            }         
+            if (Path.ToLower().Contains("e:\\"))
+            {
+                _path = "E:\\" + this.Substring(Path.ToLower(), "e:\\", ".sys") + ".sys";
+            }
+            return _path;          
         }
         private string Substring(string source, string from = null, string until = null, StringComparison comparison = StringComparison.InvariantCulture)
         {
